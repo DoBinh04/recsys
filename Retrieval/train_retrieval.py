@@ -60,7 +60,7 @@ train_loader, val_loader = build_dataloader(
     item2idx,
     root2idx,
     leaf2idx,
-    batch_size=1024,
+    batch_size=128,
 )
 
 # MODEL
