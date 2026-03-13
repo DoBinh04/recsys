@@ -34,8 +34,8 @@ class ItemFeatureBuilder:
             .reset_index()
         )
 
-        popularity["cart_rate"] = popularity["total_addtocart"] / (popularity["total_views"])
-        popularity["purchase_rate"] = popularity["total_transactions"] / (popularity["total_views"])
+        popularity["cart_rate"] = popularity["total_addtocart"] / (popularity["total_views"] + 1)
+        popularity["purchase_rate"] = popularity["total_transactions"] / (popularity["total_views"] + 1)
 
         popularity = popularity.rename(columns={
             "total_views": "total_views_item",
