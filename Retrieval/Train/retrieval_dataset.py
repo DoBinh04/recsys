@@ -25,6 +25,14 @@ class RetrievalDataset(Dataset):
 
         self.max_seq_len = max_seq_len
 
+        # JSON object keys are always strings after loading.
+        # Convert all ID maps to string-keyed dicts so mapping works
+        # whether source columns are int or str.
+        self.user2idx = {str(k): int(v) for k, v in user2idx.items()}
+        self.item2idx = {str(k): int(v) for k, v in item2idx.items()}
+        self.root2idx = {str(k): int(v) for k, v in root2idx.items()}
+        self.leaf2idx = {str(k): int(v) for k, v in leaf2idx.items()}
+
         self._prepare()
 
     def _pad_seq(self, seq):
@@ -43,7 +51,7 @@ class RetrievalDataset(Dataset):
 
         # map user_id -> index
         self.df["user_idx"] = (
-            self.df["user_id"]
+            self.df["user_id"].astype(str)
             .map(self.user2idx)
             .fillna(0)
             .astype(int)
@@ -51,7 +59,7 @@ class RetrievalDataset(Dataset):
 
         # map item_id -> index
         self.df["item_idx"] = (
-            self.df["item_id"]
+            self.df["item_id"].astype(str)
             .map(self.item2idx)
             .fillna(0)
             .astype(int)
@@ -59,14 +67,14 @@ class RetrievalDataset(Dataset):
 
         # map category root / leaf
         self.df["root_idx"] = (
-            self.df["root"]
+            self.df["root"].astype(str)
             .map(self.root2idx)
             .fillna(0)
             .astype(int)
         )
 
         self.df["leaf_idx"] = (
-            self.df["leaf"]
+            self.df["leaf"].astype(str)
             .map(self.leaf2idx)
             .fillna(0)
             .astype(int)
@@ -75,7 +83,10 @@ class RetrievalDataset(Dataset):
         # encode recent_items + padding
         self.df["recent_items"] = self.df["recent_items"].apply(
             lambda seq: self._pad_seq(
-                [self.item2idx.get(i, 0) for i in (seq if isinstance(seq, list) else [])]
+                [
+                    self.item2idx.get(str(i), 0)
+                    for i in (seq if isinstance(seq, list) else [])
+                ]
             )
         )
 
