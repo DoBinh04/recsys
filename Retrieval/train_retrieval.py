@@ -17,19 +17,21 @@ from Retrieval.Train.two_tower_model import TwoTowerModel
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 # ========================
 # PATHS
 # ========================
 
-train_path = "Retrieval/data/train_ready.parquet"
-val_path = "Retrieval/data/val_ready.parquet"
+train_path = PROJECT_ROOT / "Retrieval/data/train_ready.parquet"
+val_path = PROJECT_ROOT / "Retrieval/data/val_ready.parquet"
 
-user_map_path = "Retrieval/data/user2idx.json"
-item_map_path = "Retrieval/data/item2idx.json"
-root_map_path = "Retrieval/data/root2idx.json"
-leaf_map_path = "Retrieval/data/leaf2idx.json"
+user_map_path = PROJECT_ROOT / "Retrieval/data/user2idx.json"
+item_map_path = PROJECT_ROOT / "Retrieval/data/item2idx.json"
+root_map_path = PROJECT_ROOT / "Retrieval/data/root2idx.json"
+leaf_map_path = PROJECT_ROOT / "Retrieval/data/leaf2idx.json"
 
-artifacts_dir = Path("Retrieval/artifacts")
+artifacts_dir = PROJECT_ROOT / "Retrieval/artifacts"
 checkpoints_dir = artifacts_dir / "checkpoints"
 embeddings_dir = artifacts_dir / "embeddings"
 index_dir = artifacts_dir / "index"
