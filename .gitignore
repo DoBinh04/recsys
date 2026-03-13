@@ -1,0 +1,9 @@
+# Ignore virtual environment
+.ven
+.ven/
+
+# Ignore CSV files
+*.csv
+
+__pycache__/
+*.pyc
