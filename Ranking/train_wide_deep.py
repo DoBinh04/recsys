@@ -47,7 +47,15 @@ class RankingDataset(Dataset):
         }
 
 
-def build_ranking_rows(df, user_embedding_map, item_embedding_map, index, item_ids, top_k=100):
+def build_ranking_rows(
+    df,
+    user_embedding_map,
+    item_embedding_map,
+    index,
+    item_ids,
+    top_k=100,
+    force_include_positive=True,
+):
     features = []
     labels = []
     group_ids = []
@@ -65,7 +73,7 @@ def build_ranking_rows(df, user_embedding_map, item_embedding_map, index, item_i
         candidate_ids, _ = retrieve_topk(index, item_ids, user_vec, k=top_k)
         candidate_ids = candidate_ids[0] if candidate_ids else []
 
-        if pos_item not in candidate_ids:
+        if force_include_positive and pos_item not in candidate_ids:
             candidate_ids = [pos_item] + candidate_ids[:-1]
 
         for cand_id in candidate_ids:
@@ -221,8 +229,9 @@ def main():
     train_df = pd.read_parquet(train_path)
     val_df = pd.read_parquet(val_path)
 
-    user_emb = load_embedding_npz(emb_dir / "user_embeddings_train.npz")
-    item_emb = load_embedding_npz(emb_dir / "item_embeddings_train.npz")
+    user_emb_train = load_embedding_npz(emb_dir / "user_embeddings_train.npz")
+    item_emb_train = load_embedding_npz(emb_dir / "item_embeddings_train.npz")
+    user_emb_val = load_embedding_npz(emb_dir / "user_embeddings_val.npz")
 
     index, item_ids = load_faiss_index(
         index_dir / "item_faiss.index",
@@ -230,10 +239,22 @@ def main():
     )
 
     train_x, train_y, train_groups = build_ranking_rows(
-        train_df, user_emb, item_emb, index, item_ids, top_k=100
+        train_df,
+        user_emb_train,
+        item_emb_train,
+        index,
+        item_ids,
+        top_k=100,
+        force_include_positive=True,
     )
     val_x, val_y, val_groups = build_ranking_rows(
-        val_df, user_emb, item_emb, index, item_ids, top_k=100
+        val_df,
+        user_emb_val,
+        item_emb_train,
+        index,
+        item_ids,
+        top_k=100,
+        force_include_positive=False,
     )
 
     if not train_x or not val_x:
