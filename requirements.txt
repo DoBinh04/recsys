@@ -48,3 +48,6 @@ traitlets==5.14.3
 typing_extensions==4.15.0
 tzdata==2025.3
 wcwidth==0.6.0
+fastapi==0.115.12
+uvicorn[standard]==0.30.6
+faiss-cpu==1.8.0.post1

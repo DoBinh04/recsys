@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch
@@ -90,13 +90,30 @@ class RecommenderService:
         return [item[0] for item in scored_items[:top_k]] # Chỉ trả về ID
 
 app = FastAPI(title="RecSys Inference API")
-service = RecommenderService()
+service: Optional[RecommenderService] = None
+service_init_error: Optional[str] = None
+
+
+@app.on_event("startup")
+def load_service() -> None:
+    global service, service_init_error
+    try:
+        service = RecommenderService()
+        service_init_error = None
+    except Exception as exc:
+        service = None
+        service_init_error = str(exc)
 
 @app.get("/health")
-def healthcheck(): return {"status": "ok"}
+def healthcheck():
+    if service is None:
+        return {"status": "degraded", "detail": service_init_error}
+    return {"status": "ok"}
 
 @app.post("/recommend", response_model=RecommendResponse)
 def recommend(req: RecommendRequest):
+    if service is None:
+        raise HTTPException(status_code=503, detail=f"service unavailable: {service_init_error}")
     recommendations = service.recommend(req.user_id, req.top_k, req.candidate_k)
     return RecommendResponse(user_id=req.user_id, top_k=req.top_k, recommendations=recommendations)
 
